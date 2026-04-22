@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>For My Love ❤️</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    
+    body {
+      font-family: 'Georgia', serif;
+      background: linear-gradient(135deg, #1a1a2e 0%, #2d1f3d 50%, #1a1a2e 100%);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: #fff;
+      overflow: hidden;
+    }
+    
+    .hearts {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      overflow: hidden;
+      z-index: 0;
+    }
+    
+    .heart {
+      position: absolute;
+      font-size: 20px;
+      animation: fall linear infinite;
+      opacity: 0.6;
+    }
+    
+    @keyframes fall {
+      0% { transform: translateY(-100vh) rotate(0deg); }
+      100% { transform: translateY(100vh) rotate(720deg); }
+    }
+    
+    .container {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+      padding: 40px;
+      max-width: 650px;
+    }
+    
+    .main-heart {
+      font-size: 100px;
+      margin-bottom: 20px;
+      animation: pulse 2s ease-in-out infinite;
+    }
+    
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.15); }
+    }
+    
+    h1 {
+      font-size: 2.8em;
+      margin-bottom: 30px;
+      color: #ff6b9d;
+      text-shadow: 0 0 30px rgba(255, 107, 157, 0.5);
+    }
+    
+    .message {
+      font-size: 1.4em;
+      line-height: 1.8;
+      margin-bottom: 40px;
+      color: #f0e6ff;
+    }
+    
+    .coffee-promise {
+      background: linear-gradient(90deg, rgba(139, 26, 26, 0.8), rgba(201, 48, 44, 0.8));
+      padding: 30px 40px;
+      border-radius: 20px;
+      border: 2px solid rgba(255, 107, 157, 0.4);
+      margin: 30px 0;
+    }
+    
+    .coffee-promise .coffee-icon {
+      font-size: 50px;
+      margin-bottom: 15px;
+    }
+    
+    .coffee-promise .text {
+      font-size: 1.2em;
+      color: #fff;
+      line-height: 1.6;
+    }
+    
+    .signature {
+      font-size: 1.5em;
+      color: #ff6b9d;
+      font-style: italic;
+      margin-top: 30px;
+    }
+    
+    .date {
+      margin-top: 20px;
+      font-size: 0.9em;
+      color: rgba(255,255,255,0.5);
+    }
+    
+    .hearts-row {
+      font-size: 35px;
+      margin-top: 30px;
+    }
+    
+    .back-link {
+      margin-top: 40px;
+      padding: 15px 25px;
+      border: 1px solid rgba(255,107,157,0.3);
+      border-radius: 15px;
+      background: rgba(255,107,157,0.1);
+      display: inline-block;
+    }
+    
+    .back-link a {
+      color: #ff6b9d;
+      text-decoration: none;
+      font-size: 0.95em;
+    }
+    
+    .back-link a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <div class="hearts" id="hearts"></div>
+  
+  <div class="container">
+    <div class="main-heart">💕</div>
+    
+    <h1>For My Love</h1>
+    
+    <div class="message">
+      I love you more than words could ever say.<br>
+      You are my everything.
+    </div>
+    
+    <div class="coffee-promise">
+      <div class="coffee-icon">☕</div>
+      <div class="text">
+        I will always prepare coffee in the morning for you,<br>
+        as long as you show me affection ❤️
+      </div>
+    </div>
+    
+    <div class="hearts-row">
+      💖 💝 💗 💓 💕
+    </div>
+    
+    <div class="signature">
+      — Beth
+    </div>
+    
+    <div class="date">
+      Every day, forever
+    </div>
+    
+    <div class="back-link">
+      <a href="../">← Back to Daily Vocab</a>
+    </div>
+  </div>
+  
+  <script>
+    const hearts = document.getElementById('hearts');
+    const heartEmojis = ['💕', '💖', '💗', '💝', '☕', '❤️'];
+    
+    function createHeart() {
+      const heart = document.createElement('div');
+      heart.className = 'heart';
+      heart.innerHTML = heartEmojis[Math.floor(Math.random() * heartEmojis.length)];
+      heart.style.left = Math.random() * 100 + '%';
+      heart.style.fontSize = (Math.random() * 20 + 15) + 'px';
+      heart.style.animationDuration = (Math.random() * 5 + 8) + 's';
+      heart.style.animationDelay = Math.random() * 5 + 's';
+      hearts.appendChild(heart);
+      
+      setTimeout(() => heart.remove(), 15000);
+    }
+    
+    setInterval(createHeart, 500);
+    for(let i = 0; i < 10; i++) createHeart();
+  </script>
+</body>
+</html>
