@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🇩🇪 German B1 Vocabulary Practice</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+      min-height: 100vh;
+      color: #fff;
+      padding: 20px;
+    }
+    
+    .container { max-width: 800px; margin: 0 auto; }
+    
+    .header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    
+    .header h1 { font-size: 2em; margin-bottom: 10px; }
+    .header p { color: #888; }
+    
+    .mode-selector {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      margin-bottom: 30px;
+      flex-wrap: wrap;
+    }
+    
+    .mode-btn {
+      padding: 15px 25px;
+      border: none;
+      border-radius: 10px;
+      background: rgba(255,255,255,0.1);
+      color: #fff;
+      font-size: 1em;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    
+    .mode-btn:hover, .mode-btn.active {
+      background: #e63946;
+      transform: scale(1.05);
+    }
+    
+    .flashcard {
+      background: rgba(255,255,255,0.08);
+      border-radius: 20px;
+      padding: 40px;
+      text-align: center;
+      min-height: 300px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+    
+    .flashcard .word {
+      font-size: 3em;
+      font-weight: bold;
+      color: #ffd700;
+      margin-bottom: 20px;
+    }
+    
+    .flashcard .translation {
+      font-size: 1.5em;
+      color: #4ecdc4;
+      display: none;
+    }
+    
+    .flashcard .example {
+      font-size: 1em;
+      color: #888;
+      margin-top: 20px;
+      font-style: italic;
+      display: none;
+    }
+    
+    .flashcard.show-answer .translation,
+    .flashcard.show-answer .example { display: block; }
+    
+    .flashcard .hint {
+      font-size: 0.9em;
+      color: #666;
+      margin-top: 20px;
+    }
+    
+    .btn-group {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      margin-top: 20px;
+      flex-wrap: wrap;
+    }
+    
+    .btn {
+      padding: 12px 30px;
+      border: none;
+      border-radius: 10px;
+      font-size: 1em;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    
+    .btn-next { background: #e63946; color: #fff; }
+    .btn-show { background: #4ecdc4; color: #1a1a2e; }
+    .btn:hover { transform: scale(1.05); }
+    
+    .quiz-container { display: none; }
+    .quiz-container.active { display: block; }
+    
+    .quiz-question {
+      font-size: 1.8em;
+      text-align: center;
+      margin-bottom: 30px;
+      color: #ffd700;
+    }
+    
+    .quiz-options {
+      display: grid;
+      gap: 15px;
+    }
+    
+    .quiz-option {
+      padding: 20px;
+      background: rgba(255,255,255,0.1);
+      border: 2px solid transparent;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.3s;
+      text-align: center;
+      font-size: 1.2em;
+    }
+    
+    .quiz-option:hover { background: rgba(255,255,255,0.2); }
+    .quiz-option.correct { border-color: #4ecdc4; background: rgba(78,205,196,0.3); }
+    .quiz-option.wrong { border-color: #e63946; background: rgba(230,57,70,0.3); }
+    
+    .quiz-result {
+      text-align: center;
+      margin-top: 20px;
+      font-size: 1.2em;
+    }
+    
+    .input-quiz { display: none; }
+    .input-quiz.active { display: block; }
+    
+    .input-quiz input {
+      width: 100%;
+      padding: 15px;
+      font-size: 1.5em;
+      border: 2px solid rgba(255,255,255,0.2);
+      border-radius: 10px;
+      background: rgba(255,255,255,0.1);
+      color: #fff;
+      text-align: center;
+      margin-bottom: 15px;
+    }
+    
+    .input-quiz input:focus {
+      outline: none;
+      border-color: #4ecdc4;
+    }
+    
+    .progress-bar {
+      background: rgba(255,255,255,0.1);
+      border-radius: 10px;
+      height: 10px;
+      margin-bottom: 20px;
+      overflow: hidden;
+    }
+    
+    .progress-fill {
+      background: linear-gradient(90deg, #e63946, #ffd700);
+      height: 100%;
+      transition: width 0.3s;
+      border-radius: 10px;
+    }
+    
+    .stats {
+      display: flex;
+      justify-content: center;
+      gap: 30px;
+      margin-bottom: 20px;
+      font-size: 1.1em;
+    }
+    
+    .stats span { color: #4ecdc4; }
+    
+    .nav-link {
+      text-align: center;
+      margin-top: 30px;
+    }
+    
+    .nav-link a {
+      color: #888;
+      text-decoration: none;
+      font-size: 0.9em;
+    }
+    
+    .nav-link a:hover { color: #fff; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>🇩🇪 German B1 Practice</h1>
+      <p>TELC-style vocabulary trainer</p>
+    </div>
+    
+    <div class="stats">
+      <div>Score: <span id="score">0</span></div>
+      <div>Progress: <span id="progress">0/100</span></div>
+    </div>
+    
+    <div class="progress-bar">
+      <div class="progress-fill" id="progressBar" style="width: 0%"></div>
+    </div>
+    
+    <div class="mode-selector">
+      <button class="mode-btn active" onclick="setMode('flashcard')">📚 Flashcards</button>
+      <button class="mode-btn" onclick="setMode('quiz')">🎯 Multiple Choice</button>
+      <button class="mode-btn" onclick="setMode('input')">✏️ Type Answer</button>
+    </div>
+    
+    <!-- Flashcard Mode -->
+    <div class="flashcard" id="flashcard" onclick="revealAnswer()">
+      <div class="word" id="cardWord">Loading...</div>
+      <div class="translation" id="cardTranslation"></div>
+      <div class="example" id="cardExample"></div>
+      <div class="hint">Tap to reveal answer</div>
+    </div>
+    
+    <div class="btn-group">
+      <button class="btn btn-show" onclick="revealAnswer()">Show Answer</button>
+      <button class="btn btn-next" onclick="nextCard(-1)">❌ Don't Know</button>
+      <button class="btn btn-next" onclick="nextCard(1)">✅ Know It!</button>
+    </div>
+    
+    <!-- Quiz Mode -->
+    <div class="quiz-container" id="quizContainer">
+      <div class="quiz-question" id="quizQuestion">What does "Freundschaft" mean?</div>
+      <div class="quiz-options" id="quizOptions"></div>
+      <div class="quiz-result" id="quizResult"></div>
+    </div>
+    
+    <!-- Input Quiz Mode -->
+    <div class="input-quiz" id="inputQuiz">
+      <div class="quiz-question" id="inputQuestion">What does "die Umwelt" mean in English?</div>
+      <input type="text" id="answerInput" placeholder="Type your answer..." onkeypress="if(event.key==='Enter')checkInputAnswer()">
+      <button class="btn btn-next" onclick="checkInputAnswer()">Check</button>
+      <div class="quiz-result" id="inputResult"></div>
+    </div>
+    
+    <div class="nav-link">
+      <a href="../">← Back to Vocab Home</a> | <a href="../love/">💕 For My Love</a>
+    </div>
+  </div>
+  
+  <script>
+    const vocabulary = [
+      { word: "die Umwelt", translation: "the environment", example: "Wir müssen die Umwelt schützen." },
+      { word: "entwickeln", translation: "to develop", example: "Die Kinder entwickeln neue Fähigkeiten." },
+      { word: "die Meinung", translation: "the opinion", example: "Jeder hat das Recht auf eine eigene Meinung." },
+      { word: "bewerten", translation: "to evaluate", example: "Der Lehrer bewertet die Hausaufgaben." },
+      { word: "verändern", translation: "to change", example: "Das Wetter kann sich schnell verändern." },
+      { word: "die Freundschaft", translation: "the friendship", example: "Unsere Freundschaft ist sehr wichtig." },
+      { word: "die Veranstaltung", translation: "the event", example: "Die Veranstaltung beginnt um 19 Uhr." },
+      { word: "der Wettbewerb", translation: "the competition", example: "Der internationale Wettbewerb ist sehr hart." },
+      { word: "aufhören", translation: "to stop", example: "Ich habe beschlossen aufzuhören." },
+      { word: "erkunden", translation: "to explore", example: "Wir wollen die Altstadt erkunden." },
+      { word: "besichtigen", translation: "to visit, to tour", example: "Wir besichtigen morgen das Schloss." },
+      { word: "der Bericht", translation: "the report", example: "Die Berichte sind sehr detailliert." },
+      { word: "basteln", translation: "to craft, to do DIY", example: "Die Kinder basteln gerne." },
+      { word: "kulturell", translation: "cultural", example: "Die kulturelle Vielfalt ist wichtig." },
+      { word: "fremde Länder", translation: "foreign countries", example: "Sie reist gerne in fremde Länder." },
+      { word: "das Sonderangebot", translation: "the special offer", example: "Das Sonderangebot gilt nur bis morgen." },
+      { word: "die Überraschung", translation: "the surprise", example: "Wir haben viele Überraschungen geplant." },
+      { word: "arbeiten", translation: "to work", example: "Ich arbeite in einem Büro." },
+      { word: "lernen", translation: "to learn", example: "Die Schüler lernen jeden Tag." },
+      { word: "die Freizeit", translation: "free time, leisure", example: "Was machst du in deiner Freizeit?" },
+      { word: "wünschen", translation: "to wish", example: "Ich wünsche dir alles Gute!" },
+      { word: "erleben", translation: "to experience", example: "Wir erleben viele Abenteuer." },
+      { word: "die Erfahrung", translation: "the experience", example: "Das war eine tolle Erfahrung." },
+      { word: "entscheiden", translation: "to decide", example: "Ich muss mich entscheiden." },
+      { word: "erklären", translation: "to explain", example: "Kannst du das bitte erklären?" },
+      { word: "versuchen", translation: "to try", example: "Ich versuche mein Bestes." },
+      { word: "erwarten", translation: "to expect", example: "Was erwartest du davon?" },
+      { word: "vorschlagen", translation: "to suggest", example: "Ich schlage ein Restaurant vor." },
+      { word: "teilnehmen", translation: "to participate", example: "Möchtest du teilnehmen?" },
+      { word: "sich anmelden", translation: "to register", example: "Ich muss mich für den Kurs anmelden." },
+      { word: "die Prüfung", translation: "the exam", example: "Die Prüfung ist nächste Woche." },
+      { word: "der Unterricht", translation: "the class, lesson", example: "Der Unterricht beginnt um 8 Uhr." },
+      { word: "löschen", translation: "to delete", example: "Bitte lösche diese Datei." },
+      { word: "drucken", translation: "to print", example: "Ich muss diese Seite drucken." },
+      { word: "der Ordner", translation: "the folder", example: "Bitte speichere es im Ordner." },
+      { word: "der Anhang", translation: "the attachment", example: "Die E-Mail hat einen Anhang." },
+      { word: "senden", translation: "to send", example: "Ich werde die E-Mail senden." },
+      { word: "empfangen", translation: "to receive", example: "Ich habe deine Nachricht empfangen." },
+      { word: "beantworten", translation: "to answer", example: "Bitte beantworte die Frage." },
+      { word: "sich kümmern", translation: "to take care of", example: "Ich muss mich um die Kinder kümmern." },
+      { word: "erinnern", translation: "to remind", example: "Erinnere mich bitte daran." },
+      { word: "merken", translation: "to notice", example: "Das habe ich mir gemerkt." },
+      { word: "die Lösung", translation: "the solution", example: "Wir brauchen eine Lösung." },
+      { word: "das Problem", translation: "the problem", example: "Das ist kein Problem." },
+      { word: "die Aufgabe", translation: "the task, homework", example: "Ich habe viele Aufgaben." },
+      { word: "der Fehler", translation: "the mistake", example: "Jeder macht Fehler." },
+      { word: "korrigieren", translation: "to correct", example: "Kannst du das korrigieren?" },
+      { word: "die Korrektur", translation: "the correction", example: "Die Korrektur dauert lange." },
+      { word: "verbessern", translation: "to improve", example: "Ich will mein Deutsch verbessern." },
+      { word: "üben", translation: "to practice", example: "Ich muss mehr üben." },
+      { word: "wiederholen", translation: "to repeat", example: "Kannst du das wiederholen?" },
+      { word: "verstehen", translation: "to understand", example: "Ich verstehe nicht." },
+      { word: "wissen", translation: "to know (facts)", example: "Ich weiß die Antwort." },
+      { word: "kennen", translation: "to know (people/places)", example: "Ich kenne ihn gut." },
+      { word: "glauben", translation: "to believe", example: "Ich glaube an dich." },
+      { word: "denken", translation: "to think", example: "Ich denke, das ist richtig." },
+      { word: "finden", translation: "to find", example: "Ich finde das Buch nicht." },
+      { word: "suchen", translation: "to search", example: "Ich suche einen Job." },
+      { word: "brauchen", translation: "to need", example: "Ich brauche deine Hilfe." },
+      { word: "wollen", translation: "to want", example: "Ich will nach Hause." },
+      { word: "müssen", translation: "must, to have to", example: "Ich muss jetzt gehen." },
+      { word: "können", translation: "can, to be able", example: "Ich kann Deutsch sprechen." },
+      { word: "sollen", translation: "should", example: "Du sollst das nicht tun." },
+      { word: "dürfen", translation: "may, to be allowed", example: "Darf ich hier rauchen?" },
+      { word: "mögen", translation: "to like", example: "Ich mag Schokolade." },
+      { word: "gefallen", translation: "to like (impersonal)", example: "Das gefällt mir sehr." },
+      { word: "spielen", translation: "to play", example: "Die Kinder spielen im Park." },
+      { word: "kochen", translation: "to cook", example: "Ich koche gerne." },
+      { word: "reisen", translation: "to travel", example: "Wir reisen nach Deutschland." },
+      { word: "besuchen", translation: "to visit", example: "Ich besuche meine Oma." },
+      { word: "treffen", translation: "to meet", example: "Wir treffen uns um 6 Uhr." },
+      { word: "sprechen", translation: "to speak", example: "Ich spreche Deutsch." },
+      { word: "schreiben", translation: "to write", example: "Ich schreibe einen Brief." },
+      { word: "lesen", translation: "to read", example: "Ich lese ein Buch." },
+      { word: "hören", translation: "to hear, to listen", example: "Ich höre Musik." },
+      { word: "sehen", translation: "to see", example: "Ich sehe den Film." },
+      { word: "schauen", translation: "to watch, to look", example: "Schau mal da!" },
+      { word: "kommen", translation: "to come", example: "Ich komme morgen." },
+      { word: "gehen", translation: "to go, to walk", example: "Ich gehe zur Schule." },
+      { word: "fahren", translation: "to drive, to travel", example: "Ich fahre mit dem Bus." },
+      { word: "fliegen", translation: "to fly", example: "Wir fliegen nach Berlin." },
+      { word: "bleiben", translation: "to stay, to remain", example: "Ich bleibe hier." },
+      { word: "leben", translation: "to live", example: "Wir leben in Zürich." },
+      { word: "arbeiten", translation: "to work", example: "Sie arbeitet als Ärztin." },
+      { word: "studieren", translation: "to study (university)", example: "Ich studiere Medizin." },
+      { word: "heiraten", translation: "to marry", example: "Sie wollen nächstes Jahr heiraten." },
+      { word: "umziehen", translation: "to move (house)", example: "Wir ziehen nächste Woche um." },
+      { word: "feiern", translation: "to celebrate", example: "Wir feiern Geburtstag." },
+      { word: "gratulieren", translation: "to congratulate", example: "Ich gratuliere dir!" },
+      { word: "entschuldigen", translation: "to excuse, to apologize", example: "Entschuldigung!" },
+      { word: "danken", translation: "to thank", example: "Danke für deine Hilfe!" },
+      { word: "grüßen", translation: "to greet", example: "Grüß dich!" },
+      { word: "vorstellen", translation: "to introduce, to imagine", example: "Darf ich mich vorstellen?" },
+      { word: "kennenlernen", translation: "to get to know", example: "Freut mich, Sie kennenzulernen." },
+      { word: "begrüßen", translation: "to welcome, to greet", example: "Wir begrüßen die Gäste." },
+      { word: "verabschieden", translation: "to say goodbye", example: "Ich verabschiede mich von allen." },
+      { word: "einladen", translation: "to invite", example: "Ich lade dich zum Essen ein." },
+      { word: "treffen", translation: "to meet, to hit", example: "Wir treffen uns später." },
+      { word: "helfen", translation: "to help", example: "Kannst du mir helfen?" },
+      { word: "brauchen", translation: "to need", example: "Du brauchst nicht zu kommen." },
+      { word: "glauben", translation: "to believe, to think", example: "Ich glaube, es wird regnen." }
+    ];
+    
+    let currentIndex = 0;
+    let score = 0;
+    let mode = 'flashcard';
+    let shuffledVocab = [...vocabulary].sort(() => Math.random() - 0.5);
+    
+    function setMode(newMode) {
+      mode = newMode;
+      document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+      event.target.classList.add('active');
+      
+      document.getElementById('flashcard').style.display = 'flex';
+      document.getElementById('quizContainer').classList.remove('active');
+      document.getElementById('inputQuiz').classList.remove('active');
+      
+      if (mode === 'quiz') {
+        document.getElementById('flashcard').style.display = 'none';
+        document.getElementById('quizContainer').classList.add('active');
+        showQuizQuestion();
+      } else if (mode === 'input') {
+        document.getElementById('flashcard').style.display = 'none';
+        document.getElementById('inputQuiz').classList.add('active');
+        showInputQuestion();
+      }
+      
+      updateProgress();
+    }
+    
+    function updateProgress() {
+      document.getElementById('score').textContent = score;
+      document.getElementById('progress').textContent = `${currentIndex}/${shuffledVocab.length}`;
+      document.getElementById('progressBar').style.width = `${(currentIndex / shuffledVocab.length) * 100}%`;
+    }
+    
+    function revealAnswer() {
+      document.getElementById('flashcard').classList.add('show-answer');
+    }
+    
+    function nextCard(known) {
+      if (known) score++;
+      currentIndex = (currentIndex + 1) % shuffledVocab.length;
+      updateProgress();
+      
+      document.getElementById('flashcard').classList.remove('show-answer');
+      document.getElementById('cardWord').textContent = shuffledVocab[currentIndex].word;
+      document.getElementById('cardTranslation').textContent = shuffledVocab[currentIndex].translation;
+      document.getElementById('cardExample').textContent = shuffledVocab[currentIndex].example;
+    }
+    
+    function showQuizQuestion() {
+      const item = shuffledVocab[currentIndex];
+      document.getElementById('quizQuestion').textContent = `What does "${item.word}" mean?`;
+      
+      let options = [item.translation];
+      while (options.length < 4) {
+        const randomWord = vocabulary[Math.floor(Math.random() * vocabulary.length)].translation;
+        if (!options.includes(randomWord)) options.push(randomWord);
+      }
+      options.sort(() => Math.random() - 0.5);
+      
+      const optionsContainer = document.getElementById('quizOptions');
+      optionsContainer.innerHTML = '';
+      options.forEach(opt => {
+        const btn = document.createElement('div');
+        btn.className = 'quiz-option';
+        btn.textContent = opt;
+        btn.onclick = () => checkQuizAnswer(btn, opt, item.translation);
+        optionsContainer.appendChild(btn);
+      });
+      document.getElementById('quizResult').textContent = '';
+    }
+    
+    function checkQuizAnswer(btn, selected, correct) {
+      const options = document.querySelectorAll('.quiz-option');
+      options.forEach(o => o.style.pointerEvents = 'none');
+      
+      if (selected === correct) {
+        btn.classList.add('correct');
+        score++;
+        document.getElementById('quizResult').textContent = '✅ Correct!';
+        document.getElementById('quizResult').style.color = '#4ecdc4';
+      } else {
+        btn.classList.add('wrong');
+        options.forEach(o => {
+          if (o.textContent === correct) o.classList.add('correct');
+        });
+        document.getElementById('quizResult').textContent = `❌ The answer is: ${correct}`;
+        document.getElementById('quizResult').style.color = '#e63946';
+      }
+      
+      currentIndex = (currentIndex + 1) % shuffledVocab.length;
+      updateProgress();
+      setTimeout(showQuizQuestion, 1500);
+    }
+    
+    function showInputQuestion() {
+      const item = shuffledVocab[currentIndex];
+      document.getElementById('inputQuestion').textContent = `What does "${item.word}" mean in English?`;
+      document.getElementById('answerInput').value = '';
+      document.getElementById('answerInput').focus();
+      document.getElementById('inputResult').textContent = '';
+    }
+    
+    function checkInputAnswer() {
+      const item = shuffledVocab[currentIndex];
+      const userAnswer = document.getElementById('answerInput').value.trim().toLowerCase();
+      const correctAnswer = item.translation.toLowerCase();
+      
+      if (userAnswer === correctAnswer || correctAnswer.includes(userAnswer) && userAnswer.length > 3) {
+        score++;
+        document.getElementById('inputResult').textContent = '✅ Correct!';
+        document.getElementById('inputResult').style.color = '#4ecdc4';
+      } else {
+        document.getElementById('inputResult').textContent = `❌ The answer is: ${item.translation}`;
+        document.getElementById('inputResult').style.color = '#e63946';
+      }
+      
+      currentIndex = (currentIndex + 1) % shuffledVocab.length;
+      updateProgress();
+      setTimeout(showInputQuestion, 1500);
+    }
+    
+    // Initialize
+    updateProgress();
+  </script>
+</body>
+</html>
