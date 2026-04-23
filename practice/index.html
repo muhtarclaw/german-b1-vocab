@@ -490,6 +490,9 @@
     }
     
     // Initialize
+    document.getElementById('cardWord').textContent = shuffledVocab[0].word;
+    document.getElementById('cardTranslation').textContent = shuffledVocab[0].translation;
+    document.getElementById('cardExample').textContent = shuffledVocab[0].example;
     updateProgress();
   </script>
 </body>
