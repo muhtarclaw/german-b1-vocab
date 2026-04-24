@@ -74,13 +74,6 @@
     .date-section.active {
       display: block;
     }
-    .date-header {
-      text-align: center;
-      background: #e63946;
-      padding: 8px 20px;
-      border-radius: 20px;
-      margin-bottom: 20px;
-    }
 
     /* Word cards */
     .word-card {
@@ -140,8 +133,6 @@
 
     <!-- 2026-04-22 -->
     <div id="2026-04-22" class="date-section active">
-      <div class="date-header">📅 2026-04-22</div>
-
       <div class="word-card">
         <div class="german"><span class="number">1.</span> die Umwelt</div>
         <div class="english">= the environment</div>
@@ -180,8 +171,6 @@
 
     <!-- 2026-04-25 -->
     <div id="2026-04-25" class="date-section">
-      <div class="date-header">📅 2026-04-25</div>
-
       <div class="word-card">
         <div class="german"><span class="number">1.</span> der Haushalt</div>
         <div class="english">= the household, the budget</div>
@@ -228,13 +217,9 @@
     let currentIndex = 0;
 
     function updateView() {
-      // Hide all sections
       document.querySelectorAll('.date-section').forEach(el => el.classList.remove('active'));
-      // Show current section
       document.getElementById(dates[currentIndex]).classList.add('active');
-      // Update date display
       document.getElementById('currentDate').textContent = '📅 ' + dates[currentIndex];
-      // Update arrow states
       document.getElementById('prevBtn').classList.toggle('disabled', currentIndex === 0);
       document.getElementById('nextBtn').classList.toggle('disabled', currentIndex === dates.length - 1);
     }
