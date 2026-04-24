@@ -25,32 +25,46 @@
     .subtitle {
       text-align: center;
       color: #888;
-      margin-bottom: 30px;
+      margin-bottom: 20px;
     }
     
-    /* Navigation */
-    .nav-tabs {
+    /* Header with arrows */
+    .header-nav {
       display: flex;
+      align-items: center;
       justify-content: center;
-      flex-wrap: wrap;
-      gap: 10px;
+      gap: 20px;
       margin-bottom: 30px;
     }
-    .nav-tab {
+    .nav-arrow {
       background: rgba(255,255,255,0.1);
       border: 1px solid rgba(255,255,255,0.2);
       color: #fff;
-      padding: 10px 20px;
-      border-radius: 25px;
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
       cursor: pointer;
+      font-size: 1.5em;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       transition: all 0.3s;
     }
-    .nav-tab:hover {
+    .nav-arrow:hover {
       background: rgba(255,255,255,0.2);
     }
-    .nav-tab.active {
+    .nav-arrow.disabled {
+      opacity: 0.3;
+      cursor: not-allowed;
+    }
+    .current-date {
       background: #e63946;
-      border-color: #e63946;
+      padding: 10px 25px;
+      border-radius: 25px;
+      font-weight: bold;
+      font-size: 1.1em;
+      min-width: 150px;
+      text-align: center;
     }
 
     /* Date sections */
@@ -117,10 +131,11 @@
     <h1>🇩🇪 German B1</h1>
     <p class="subtitle">5 words + sentences every day</p>
 
-    <!-- Navigation Tabs -->
-    <div class="nav-tabs">
-      <button class="nav-tab active" onclick="showDate('2026-04-22')">📅 2026-04-22</button>
-      <button class="nav-tab" onclick="showDate('2026-04-25')">📅 2026-04-25</button>
+    <!-- Header Navigation -->
+    <div class="header-nav">
+      <button class="nav-arrow disabled" id="prevBtn" onclick="prevDate()">←</button>
+      <div class="current-date" id="currentDate">📅 2026-04-22</div>
+      <button class="nav-arrow" id="nextBtn" onclick="nextDate()">→</button>
     </div>
 
     <!-- 2026-04-22 -->
@@ -209,15 +224,33 @@
   </div>
 
   <script>
-    function showDate(date) {
+    const dates = ['2026-04-22', '2026-04-25'];
+    let currentIndex = 0;
+
+    function updateView() {
       // Hide all sections
       document.querySelectorAll('.date-section').forEach(el => el.classList.remove('active'));
-      // Remove active from all tabs
-      document.querySelectorAll('.nav-tab').forEach(el => el.classList.remove('active'));
-      // Show selected section
-      document.getElementById(date).classList.add('active');
-      // Highlight selected tab
-      event.target.classList.add('active');
+      // Show current section
+      document.getElementById(dates[currentIndex]).classList.add('active');
+      // Update date display
+      document.getElementById('currentDate').textContent = '📅 ' + dates[currentIndex];
+      // Update arrow states
+      document.getElementById('prevBtn').classList.toggle('disabled', currentIndex === 0);
+      document.getElementById('nextBtn').classList.toggle('disabled', currentIndex === dates.length - 1);
+    }
+
+    function prevDate() {
+      if (currentIndex > 0) {
+        currentIndex--;
+        updateView();
+      }
+    }
+
+    function nextDate() {
+      if (currentIndex < dates.length - 1) {
+        currentIndex++;
+        updateView();
+      }
     }
   </script>
 </body>
