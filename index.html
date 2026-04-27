@@ -25,17 +25,57 @@
     .subtitle {
       text-align: center;
       color: #888;
+      margin-bottom: 20px;
+    }
+    
+    /* Header with arrows */
+    .header-nav {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
       margin-bottom: 30px;
     }
-    .date {
-      text-align: center;
-      background: #e63946;
-      padding: 8px 20px;
-      border-radius: 20px;
-      display: inline-block;
-      margin: 0 auto 30px;
-      width: 100%;
+    .nav-arrow {
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.2);
+      color: #fff;
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 1.5em;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s;
     }
+    .nav-arrow:hover {
+      background: rgba(255,255,255,0.2);
+    }
+    .nav-arrow.disabled {
+      opacity: 0.3;
+      cursor: not-allowed;
+    }
+    .current-date {
+      background: #e63946;
+      padding: 10px 25px;
+      border-radius: 25px;
+      font-weight: bold;
+      font-size: 1.1em;
+      min-width: 150px;
+      text-align: center;
+    }
+
+    /* Date sections */
+    .date-section {
+      display: none;
+    }
+    .date-section.active {
+      display: block;
+    }
+
+    /* Word cards */
     .word-card {
       background: rgba(255,255,255,0.08);
       border-radius: 12px;
@@ -83,46 +123,199 @@
   <div class="container">
     <h1>🇩🇪 German B1</h1>
     <p class="subtitle">5 words + sentences every day</p>
-    <div class="date">📅 2026-04-27</div>
 
-    <div class="word-card">
-      <div class="german"><span class="number">1.</span> erklären</div>
-      <div class="english">= to explain</div>
-      <div class="sentence">Kannst du das bitte erklären?</div>
-      <div class="sentence-en">Can you please explain that?</div>
+    <!-- Header Navigation -->
+    <div class="header-nav">
+      <button class="nav-arrow" id="prevBtn" onclick="prevDate()">←</button>
+      <div class="current-date" id="currentDate">📅 2026-04-27</div>
+      <button class="nav-arrow disabled" id="nextBtn" onclick="nextDate()">→</button>
     </div>
 
-    <div class="word-card">
-      <div class="german"><span class="number">2.</span> die Lösung</div>
-      <div class="english">= the solution</div>
-      <div class="sentence">Wir müssen eine Lösung finden.</div>
-      <div class="sentence-en">We need to find a solution.</div>
+    <!-- 2026-04-22 -->
+    <div id="2026-04-22" class="date-section">
+      <div class="word-card">
+        <div class="german"><span class="number">1.</span> die Umwelt</div>
+        <div class="english">= the environment</div>
+        <div class="sentence">Wir müssen die Umwelt schützen.</div>
+        <div class="sentence-en">We must protect the environment.</div>
+      </div>
+
+      <div class="word-card">
+        <div class="german"><span class="number">2.</span> entwickeln</div>
+        <div class="english">= to develop</div>
+        <div class="sentence">Die Kinder entwickeln neue Fähigkeiten.</div>
+        <div class="sentence-en">The children develop new skills.</div>
+      </div>
+
+      <div class="word-card">
+        <div class="german"><span class="number">3.</span> die Meinung</div>
+        <div class="english">= the opinion</div>
+        <div class="sentence">Jeder hat das Recht auf eine eigene Meinung.</div>
+        <div class="sentence-en">Everyone has the right to their own opinion.</div>
+      </div>
+
+      <div class="word-card">
+        <div class="german"><span class="number">4.</span> bewerten</div>
+        <div class="english">= to evaluate, to assess</div>
+        <div class="sentence">Der Lehrer bewertet die Hausaufgaben.</div>
+        <div class="sentence-en">The teacher evaluates the homework.</div>
+      </div>
+
+      <div class="word-card">
+        <div class="german"><span class="number">5.</span> verändern</div>
+        <div class="english">= to change, to alter</div>
+        <div class="sentence">Das Wetter kann sich schnell verändern.</div>
+        <div class="sentence-en">The weather can change quickly.</div>
+      </div>
     </div>
 
-    <div class="word-card">
-      <div class="german"><span class="number">3.</span> unterstützen</div>
-      <div class="english">= to support</div>
-      <div class="sentence">Ich unterstütze deine Entscheidung.</div>
-      <div class="sentence-en">I support your decision.</div>
+    <!-- 2026-04-25 -->
+    <div id="2026-04-25" class="date-section">
+      <div class="word-card">
+        <div class="german"><span class="number">1.</span> der Haushalt</div>
+        <div class="english">= the household, the budget</div>
+        <div class="sentence">Der Haushalt ist sehr gut organisiert.</div>
+        <div class="sentence-en">The household is very well organized.</div>
+      </div>
+
+      <div class="word-card">
+        <div class="german"><span class="number">2.</span> sich erkundigen</div>
+        <div class="english">= to inquire, to ask for information</div>
+        <div class="sentence">Ich erkundige mich nach dem Weg zum Bahnhof.</div>
+        <div class="sentence-en">I'm asking for directions to the train station.</div>
+      </div>
+
+      <div class="word-card">
+        <div class="german"><span class="number">3.</span> die Verpackung</div>
+        <div class="english">= the packaging, the wrapping</div>
+        <div class="sentence">Die Verpackung ist aus recycelbarem Material.</div>
+        <div class="sentence-en">The packaging is made from recyclable material.</div>
+      </div>
+
+      <div class="word-card">
+        <div class="german"><span class="number">4.</span> annehmen</div>
+        <div class="english">= to accept, to assume, to take on</div>
+        <div class="sentence">Ich nehme den Vorschlag gerne an.</div>
+        <div class="sentence-en">I gladly accept the suggestion.</div>
+      </div>
+
+      <div class="word-card">
+        <div class="german"><span class="number">5.</span> die Erfahrung</div>
+        <div class="english">= the experience</div>
+        <div class="sentence">Das war eine tolle Erfahrung für mich.</div>
+        <div class="sentence-en">That was a great experience for me.</div>
+      </div>
     </div>
 
-    <div class="word-card">
-      <div class="german"><span class="number">4.</span> betreiben</div>
-      <div class="english">= to operate, to run</div>
-      <div class="sentence">Das Kraftwerk wird von der Firma betrieben.</div>
-      <div class="sentence-en">The power plant is operated by the company.</div>
+    <!-- 2026-04-26 -->
+    <div id="2026-04-26" class="date-section">
+      <div class="word-card">
+        <div class="german"><span class="number">1.</span> die Vorsorge</div>
+        <div class="english">= the precaution, the provision</div>
+        <div class="sentence">Vorsorge ist besser als Nachsorge.</div>
+        <div class="sentence-en">Prevention is better than cure.</div>
+      </div>
+
+      <div class="word-card">
+        <div class="german"><span class="number">2.</span> sich kümmern</div>
+        <div class="english">= to take care of, to look after</div>
+        <div class="sentence">Ich kümmere mich um die Kinder.</div>
+        <div class="sentence-en">I look after the children.</div>
+      </div>
+
+      <div class="word-card">
+        <div class="german"><span class="number">3.</span> die Rechnung</div>
+        <div class="english">= the invoice, the bill</div>
+        <div class="sentence">Können wir die Rechnung bitte bezahlen?</div>
+        <div class="sentence-en">Can we please pay the bill?</div>
+      </div>
+
+      <div class="word-card">
+        <div class="german"><span class="number">4.</span> bestätigen</div>
+        <div class="english">= to confirm</div>
+        <div class="sentence">Bitte bestätigen Sie Ihre Teilnahme.</div>
+        <div class="sentence-en">Please confirm your participation.</div>
+      </div>
+
+      <div class="word-card">
+        <div class="german"><span class="number">5.</span> der Feiertag</div>
+        <div class="english">= the public holiday</div>
+        <div class="sentence">Morgen ist ein Feiertag in der Schweiz.</div>
+        <div class="sentence-en">Tomorrow is a public holiday in Switzerland.</div>
+      </div>
     </div>
 
-    <div class="word-card">
-      <div class="german"><span class="number">5.</span> das Ziel</div>
-      <div class="english">= the goal, the target</div>
-      <div class="sentence">Unser Ziel ist es, bis 2030 klimaneutral zu sein.</div>
-      <div class="sentence-en">Our goal is to be climate-neutral by 2030.</div>
+    <!-- 2026-04-27 -->
+    <div id="2026-04-27" class="date-section active">
+      <div class="word-card">
+        <div class="german"><span class="number">1.</span> erklären</div>
+        <div class="english">= to explain</div>
+        <div class="sentence">Kannst du das bitte erklären?</div>
+        <div class="sentence-en">Can you please explain that?</div>
+      </div>
+
+      <div class="word-card">
+        <div class="german"><span class="number">2.</span> die Lösung</div>
+        <div class="english">= the solution</div>
+        <div class="sentence">Wir müssen eine Lösung finden.</div>
+        <div class="sentence-en">We need to find a solution.</div>
+      </div>
+
+      <div class="word-card">
+        <div class="german"><span class="number">3.</span> unterstützen</div>
+        <div class="english">= to support</div>
+        <div class="sentence">Ich unterstütze deine Entscheidung.</div>
+        <div class="sentence-en">I support your decision.</div>
+      </div>
+
+      <div class="word-card">
+        <div class="german"><span class="number">4.</span> betreiben</div>
+        <div class="english">= to operate, to run</div>
+        <div class="sentence">Das Kraftwerk wird von der Firma betrieben.</div>
+        <div class="sentence-en">The power plant is operated by the company.</div>
+      </div>
+
+      <div class="word-card">
+        <div class="german"><span class="number">5.</span> das Ziel</div>
+        <div class="english">= the goal, the target</div>
+        <div class="sentence">Unser Ziel ist es, bis 2030 klimaneutral zu sein.</div>
+        <div class="sentence-en">Our goal is to be climate-neutral by 2030.</div>
+      </div>
     </div>
 
     <footer>
       Powered by <a href="https://openclaw.ai">OpenClaw</a>
     </footer>
   </div>
+
+  <script>
+    const dates = ['2026-04-22', '2026-04-25', '2026-04-26', '2026-04-27'];
+    let currentIndex = dates.length - 1; // Start at latest date
+
+    function updateView() {
+      document.querySelectorAll('.date-section').forEach(el => el.classList.remove('active'));
+      document.getElementById(dates[currentIndex]).classList.add('active');
+      document.getElementById('currentDate').textContent = '📅 ' + dates[currentIndex];
+      document.getElementById('prevBtn').classList.toggle('disabled', currentIndex === 0);
+      document.getElementById('nextBtn').classList.toggle('disabled', currentIndex === dates.length - 1);
+    }
+
+    function prevDate() {
+      if (currentIndex > 0) {
+        currentIndex--;
+        updateView();
+      }
+    }
+
+    function nextDate() {
+      if (currentIndex < dates.length - 1) {
+        currentIndex++;
+        updateView();
+      }
+    }
+
+    // Init view
+    updateView();
+  </script>
 </body>
 </html>
