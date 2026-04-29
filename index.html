@@ -127,7 +127,7 @@
     <!-- Header Navigation -->
     <div class="header-nav">
       <button class="nav-arrow" id="prevBtn" onclick="prevDate()">←</button>
-      <div class="current-date" id="currentDate">📅 2026-04-27</div>
+      <div class="current-date" id="currentDate">📅 2026-04-29</div>
       <button class="nav-arrow disabled" id="nextBtn" onclick="nextDate()">→</button>
     </div>
 
@@ -246,7 +246,7 @@
     </div>
 
     <!-- 2026-04-27 -->
-    <div id="2026-04-27" class="date-section active">
+    <div id="2026-04-27" class="date-section">
       <div class="word-card">
         <div class="german"><span class="number">1.</span> erklären</div>
         <div class="english">= to explain</div>
@@ -283,7 +283,8 @@
       </div>
     </div>
 
-    <div id="2026-04-28" class="date-section active">
+    <!-- 2026-04-28 -->
+    <div id="2026-04-28" class="date-section">
       <div class="word-card">
         <div class="german"><span class="number">1.</span> die Anpassung</div>
         <div class="english">= the adjustment, the adaptation</div>
@@ -320,13 +321,51 @@
       </div>
     </div>
 
+    <!-- 2026-04-29 -->
+    <div id="2026-04-29" class="date-section active">
+      <div class="word-card">
+        <div class="german"><span class="number">1.</span> sich anpassen</div>
+        <div class="english">= to adapt, to adjust</div>
+        <div class="sentence">Man muss sich an neue Situationen anpassen.</div>
+        <div class="sentence-en">One must adapt to new situations.</div>
+      </div>
+
+      <div class="word-card">
+        <div class="german"><span class="number">2.</span> durchführen</div>
+        <div class="english">= to carry out, to conduct</div>
+        <div class="sentence">Wir führen eine Umfrage durch.</div>
+        <div class="sentence-en">We are conducting a survey.</div>
+      </div>
+
+      <div class="word-card">
+        <div class="german"><span class="number">3.</span> der Erfolg</div>
+        <div class="english">= the success</div>
+        <div class="sentence">Der Erfolg kommt mit harter Arbeit.</div>
+        <div class="sentence-en">Success comes with hard work.</div>
+      </div>
+
+      <div class="word-card">
+        <div class="german"><span class="number">4.</span> scheitern</div>
+        <div class="english">= to fail</div>
+        <div class="sentence">Es ist nicht schlimm zu scheitern.</div>
+        <div class="sentence-en">It is not bad to fail.</div>
+      </div>
+
+      <div class="word-card">
+        <div class="german"><span class="number">5.</span> abhängig</div>
+        <div class="english">= dependent, depending on</div>
+        <div class="sentence">Der Erfolg ist abhängig von deiner Motivation.</div>
+        <div class="sentence-en">Success depends on your motivation.</div>
+      </div>
+    </div>
+
     <footer>
       Powered by <a href="https://openclaw.ai">OpenClaw</a>
     </footer>
   </div>
 
   <script>
-    const dates = ['2026-04-22', '2026-04-25', '2026-04-26', '2026-04-27', '2026-04-28'];
+    const dates = ['2026-04-22', '2026-04-25', '2026-04-26', '2026-04-27', '2026-04-28', '2026-04-29'];
     let currentIndex = dates.length - 1; // Start at latest date
 
     function updateView() {
