@@ -26,20 +26,34 @@ Format each entry as a JSON object with keys: word, translation, sentence, sente
 Return ONLY a valid JSON array with exactly 5 objects, nothing else. No markdown code blocks."
 
 VOCAB_RAW=$(cd "$REPO" && timeout 120 ollama run "$MODEL" "$PROMPT" 2>/dev/null)
-# Extract JSON array from response using Python
+# Extract JSON array from response — strip ANSI codes, then find balanced [...] using bracket counting
 VOCAB_JSON=$(echo "$VOCAB_RAW" | python3 -c "
 import sys, re, json
-text = sys.stdin.read()
-match = re.search(r'\[.*\]', text, re.DOTALL)
-if match:
-    try:
-        arr = json.loads(match.group())
-        print(json.dumps(arr))
-    except:
-        print('')
+
+raw = sys.stdin.buffer.read()
+text = re.sub(r'\x1b\[[0-9;]*[a-zA-Z]', '', raw.decode('utf-8', errors='replace'))
+
+# Find first balanced JSON array
+depth = 0
+start = -1
+for i, c in enumerate(text):
+    if c == '[':
+        if start == -1:
+            start = i
+        depth += 1
+    elif c == ']':
+        depth -= 1
+        if depth == 0 and start != -1:
+            candidate = text[start:i+1]
+            try:
+                arr = json.loads(candidate)
+                print(json.dumps(arr))
+            except:
+                print('')
+            break
 else:
     print('')
-") || true
+" 2>/dev/null) || true
 
 # Fallback vocab if LLM fails
 if [ -z "$VOCAB_JSON" ] || ! echo "$VOCAB_JSON" | python3 -c "import json,sys; json.load(sys.stdin)" 2>/dev/null; then
