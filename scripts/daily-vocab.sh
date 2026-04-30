@@ -1,13 +1,12 @@
 #!/bin/bash
 # german-vocab-daily.sh — adds 5 new B1 vocab words and pushes to GitHub
-# Run via cron: openclaw cron add --name "German B1 Vocab" --schedule "cron 0 8 * * *" --workingDir /home/muhtar/german-b1-vocab --maxDuration 90 -- cd /home/muhtar/german-b1-vocab && bash scripts/daily-vocab.sh
 
 REPO="/home/muhtar/german-b1-vocab"
 TODAY=$(date +%Y-%m-%d)
 
 cd "$REPO" || exit 1
 
-# --- Check if model is cached, pull if not ---
+# --- Check if model is cached ---
 MODEL="gemma4:e2b"
 if ! ollama list 2>/dev/null | grep -q "^$MODEL "; then
   echo "[vocab script] Model $MODEL not cached, pulling..."
@@ -25,15 +24,15 @@ For each word provide:
 Format each entry as a JSON object with keys: word, translation, sentence, sentence_en
 Return ONLY a valid JSON array with exactly 5 objects, nothing else. No markdown code blocks."
 
-VOCAB_RAW=$(cd "$REPO" && timeout 120 ollama run "$MODEL" "$PROMPT" 2>/dev/null)
-# Extract JSON array from response — strip ANSI codes, then find balanced [...] using bracket counting
-VOCAB_JSON=$(echo "$VOCAB_RAW" | python3 -c "
+RAW=$(timeout 120 ollama run "$MODEL" "$PROMPT" 2>/dev/null)
+
+# Parse: strip ANSI codes, find balanced [...] using bracket counting
+VOCAB_JSON=$(python3 /dev/stdin << 'PYEOF'
 import sys, re, json
 
 raw = sys.stdin.buffer.read()
 text = re.sub(r'\x1b\[[0-9;]*[a-zA-Z]', '', raw.decode('utf-8', errors='replace'))
 
-# Find first balanced JSON array
 depth = 0
 start = -1
 for i, c in enumerate(text):
@@ -47,13 +46,14 @@ for i, c in enumerate(text):
             candidate = text[start:i+1]
             try:
                 arr = json.loads(candidate)
-                print(json.dumps(arr))
+                print(json.dumps(arr, ensure_ascii=False))
             except:
                 print('')
             break
 else:
     print('')
-" 2>/dev/null) || true
+PYEOF
+) || true
 
 # Fallback vocab if LLM fails
 if [ -z "$VOCAB_JSON" ] || ! echo "$VOCAB_JSON" | python3 -c "import json,sys; json.load(sys.stdin)" 2>/dev/null; then
@@ -61,14 +61,15 @@ if [ -z "$VOCAB_JSON" ] || ! echo "$VOCAB_JSON" | python3 -c "import json,sys; j
   VOCAB_JSON='[{"word":"bekämpfen","translation":"to fight, to combat","sentence":"Wir müssen die Korruption bekämpfen.","sentence_en":"We must fight corruption."},{"word":"die Umwelt","translation":"the environment","sentence":"Wir müssen die Umwelt schützen.","sentence_en":"We must protect the environment."},{"word":"erklären","translation":"to explain","sentence":"Können Sie das bitte erklären?","sentence_en":"Can you please explain that?"},{"word":"die Meinung","translation":"the opinion","sentence":"Ich habe eine andere Meinung.","sentence_en":"I have a different opinion."},{"word":"sowohl als auch","translation":"both ... and ...","sentence":"Er spricht sowohl Englisch als auch Deutsch.","sentence_en":"He speaks both English and German."}]'
 fi
 
+echo "[vocab script] Generated vocab: $VOCAB_JSON" >&2
+
 # --- Check if today's section already exists ---
 if grep -q "id=\"$TODAY\"" index.html; then
   echo "[vocab script] $TODAY section already exists, skipping HTML update"
 else
   echo "[vocab script] Adding section for $TODAY"
 
-  # Extract words from JSON using python3
-  python3 << 'PYEOF'
+  python3 << PYEOF2
 import json, re, sys, os
 
 raw = os.environ.get('VOCAB_JSON', '')
@@ -100,7 +101,6 @@ for i, w in enumerate(words, 1):
 
 html += "    </div>\n"
 
-# Insert before <footer> in index.html
 with open("index.html", "r") as f:
     content = f.read()
 
@@ -124,11 +124,11 @@ with open("index.html", "w") as f:
     f.write(content)
 
 print(f"[vocab script] Added {len(words)} words for {today} to index.html")
-PYEOF
+PYEOF2
 fi
 
-# --- Also update practice/index.html if word not already present ---
-python3 << 'PYEOF2'
+# --- Also update practice/index.html ---
+python3 << 'PYEOF3'
 import json, re, sys, os
 
 raw = os.environ.get('VOCAB_JSON', '')
@@ -146,7 +146,6 @@ except:
 with open("practice/index.html", "r") as f:
     content = f.read()
 
-# Extract existing words to avoid duplicates
 existing_words = set(re.findall(r'\bword:\s*"([^"]+)"', content))
 
 added = 0
@@ -164,7 +163,7 @@ if added > 0:
     print(f"[vocab script] Added {added} new words to practice/index.html")
 else:
     print("[vocab script] All words already in practice, skipping")
-PYEOF2
+PYEOF3
 
 # --- Commit and push ---
 git add -A
