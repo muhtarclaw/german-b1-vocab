@@ -13,7 +13,7 @@ if ! ollama list 2>/dev/null | grep -q "^$MODEL "; then
   ollama pull "$MODEL"
 fi
 
-# --- Generate 5 new vocab words via ollama ---
+# --- Generate 5 new vocab words via Ollama API ---
 PROMPT="Generate exactly 5 German B1-level vocabulary words appropriate for the TELC B1 exam.
 For each word provide:
 - the German word/phrase
@@ -24,18 +24,26 @@ For each word provide:
 Format each entry as a JSON object with keys: word, translation, sentence, sentence_en
 Return ONLY a valid JSON array with exactly 5 objects, nothing else. No markdown code blocks."
 
-RAW=$(curl -s http://localhost:11434/api/generate \
-  -d "{\"model\":\"$MODEL\",\"prompt\":$(echo "$PROMPT" | python3 -c 'import sys,json; print(json.dumps(sys.stdin.read()))'),\"stream\":false}" \
-  2>/dev/null | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('response',''))" \
-) || true
+# Call Ollama API via Python to avoid TTY escape codes
+VOCAB_JSON=$(python3 -c "
+import urllib.request, json, re
 
-# Parse: strip ANSI codes, find balanced [...] using bracket counting
-VOCAB_JSON=$(python3 /dev/stdin << 'PYEOF'
-import sys, re, json
+prompt = '''$PROMPT'''
 
-raw = sys.stdin.buffer.read()
-text = re.sub(r'\x1b\[[0-9;]*[a-zA-Z]', '', raw.decode('utf-8', errors='replace'))
+req = urllib.request.Request(
+    'http://localhost:11434/api/generate',
+    data=json.dumps({'model': '$MODEL', 'prompt': prompt, 'stream': False}).encode(),
+    headers={'Content-Type': 'application/json'}
+)
+with urllib.request.urlopen(req, timeout=120) as resp:
+    data = json.load(resp)
+    text = data.get('response', '').strip()
 
+# Strip markdown code fences
+text = re.sub(r'^```(?:json)?\\s*', '', text)
+text = re.sub(r'\\s*```\$', '', text)
+
+# Find balanced JSON array via bracket counting
 depth = 0
 start = -1
 for i, c in enumerate(text):
@@ -55,8 +63,7 @@ for i, c in enumerate(text):
             break
 else:
     print('')
-PYEOF
-) || true
+" 2>&1) || true
 
 # Fallback vocab if LLM fails
 if [ -z "$VOCAB_JSON" ] || ! echo "$VOCAB_JSON" | python3 -c "import json,sys; json.load(sys.stdin)" 2>/dev/null; then
@@ -66,13 +73,16 @@ fi
 
 echo "[vocab script] Generated vocab: $VOCAB_JSON" >&2
 
+export VOCAB_JSON
+export TODAY
+
 # --- Check if today's section already exists ---
 if grep -q "id=\"$TODAY\"" index.html; then
   echo "[vocab script] $TODAY section already exists, skipping HTML update"
 else
   echo "[vocab script] Adding section for $TODAY"
 
-  python3 << PYEOF2
+  python3 << 'PYEOF'
 import json, re, sys, os
 
 raw = os.environ.get('VOCAB_JSON', '')
@@ -127,11 +137,11 @@ with open("index.html", "w") as f:
     f.write(content)
 
 print(f"[vocab script] Added {len(words)} words for {today} to index.html")
-PYEOF2
+PYEOF
 fi
 
 # --- Also update practice/index.html ---
-python3 << 'PYEOF3'
+python3 << 'PYEOF2'
 import json, re, sys, os
 
 raw = os.environ.get('VOCAB_JSON', '')
@@ -166,7 +176,7 @@ if added > 0:
     print(f"[vocab script] Added {added} new words to practice/index.html")
 else:
     print("[vocab script] All words already in practice, skipping")
-PYEOF3
+PYEOF2
 
 # --- Commit and push ---
 git add -A
