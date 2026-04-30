@@ -14,56 +14,7 @@ if ! ollama list 2>/dev/null | grep -q "^$MODEL "; then
 fi
 
 # --- Generate 5 new vocab words via Ollama API ---
-PROMPT="Generate exactly 5 German B1-level vocabulary words appropriate for the TELC B1 exam.
-For each word provide:
-- the German word/phrase
-- English translation
-- a German example sentence
-- English translation of the example
-
-Format each entry as a JSON object with keys: word, translation, sentence, sentence_en
-Return ONLY a valid JSON array with exactly 5 objects, nothing else. No markdown code blocks."
-
-# Call Ollama API via Python to avoid TTY escape codes
-VOCAB_JSON=$(python3 -c "
-import urllib.request, json, re
-
-prompt = '''$PROMPT'''
-
-req = urllib.request.Request(
-    'http://localhost:11434/api/generate',
-    data=json.dumps({'model': '$MODEL', 'prompt': prompt, 'stream': False}).encode(),
-    headers={'Content-Type': 'application/json'}
-)
-with urllib.request.urlopen(req, timeout=120) as resp:
-    data = json.load(resp)
-    text = data.get('response', '').strip()
-
-# Strip markdown code fences
-text = re.sub(r'^```(?:json)?\\s*', '', text)
-text = re.sub(r'\\s*```\$', '', text)
-
-# Find balanced JSON array via bracket counting
-depth = 0
-start = -1
-for i, c in enumerate(text):
-    if c == '[':
-        if start == -1:
-            start = i
-        depth += 1
-    elif c == ']':
-        depth -= 1
-        if depth == 0 and start != -1:
-            candidate = text[start:i+1]
-            try:
-                arr = json.loads(candidate)
-                print(json.dumps(arr, ensure_ascii=False))
-            except:
-                print('')
-            break
-else:
-    print('')
-" 2>&1) || true
+VOCAB_JSON=$(python3 "$REPO/scripts/fetch-vocab.py" 2>&1) || true
 
 # Fallback vocab if LLM fails
 if [ -z "$VOCAB_JSON" ] || ! echo "$VOCAB_JSON" | python3 -c "import json,sys; json.load(sys.stdin)" 2>/dev/null; then
