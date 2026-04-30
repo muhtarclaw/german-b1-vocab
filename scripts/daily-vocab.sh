@@ -24,7 +24,10 @@ For each word provide:
 Format each entry as a JSON object with keys: word, translation, sentence, sentence_en
 Return ONLY a valid JSON array with exactly 5 objects, nothing else. No markdown code blocks."
 
-RAW=$(timeout 120 ollama run "$MODEL" "$PROMPT" 2>/dev/null)
+RAW=$(curl -s http://localhost:11434/api/generate \
+  -d "{\"model\":\"$MODEL\",\"prompt\":$(echo "$PROMPT" | python3 -c 'import sys,json; print(json.dumps(sys.stdin.read()))'),\"stream\":false}" \
+  2>/dev/null | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('response',''))" \
+) || true
 
 # Parse: strip ANSI codes, find balanced [...] using bracket counting
 VOCAB_JSON=$(python3 /dev/stdin << 'PYEOF'
