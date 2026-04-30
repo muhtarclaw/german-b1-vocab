@@ -7,8 +7,14 @@ TODAY=$(date +%Y-%m-%d)
 
 cd "$REPO" || exit 1
 
+# --- Check if model is cached, pull if not ---
+MODEL="gemma4:e2b"
+if ! ollama list 2>/dev/null | grep -q "^$MODEL "; then
+  echo "[vocab script] Model $MODEL not cached, pulling..."
+  ollama pull "$MODEL"
+fi
+
 # --- Generate 5 new vocab words via ollama ---
-# Prompt for 5 German B1 vocabulary words with German sentence + English translation
 PROMPT="Generate exactly 5 German B1-level vocabulary words appropriate for the TELC B1 exam.
 For each word provide:
 - the German word/phrase
@@ -19,12 +25,26 @@ For each word provide:
 Format each entry as a JSON object with keys: word, translation, sentence, sentence_en
 Return ONLY a valid JSON array with exactly 5 objects, nothing else. No markdown code blocks."
 
-VOCAB_JSON=$(cd "$REPO" && ollama run llama3.2 2>/dev/null --prompt "$PROMPT" | tr -d '\r' | sed -n '/\[/{p:r /\]/!{H;d};x;s/\n//g;p;d};:']' ) || true
+VOCAB_RAW=$(cd "$REPO" && timeout 120 ollama run "$MODEL" "$PROMPT" 2>/dev/null)
+# Extract JSON array from response using Python
+VOCAB_JSON=$(echo "$VOCAB_RAW" | python3 -c "
+import sys, re, json
+text = sys.stdin.read()
+match = re.search(r'\[.*\]', text, re.DOTALL)
+if match:
+    try:
+        arr = json.loads(match.group())
+        print(json.dumps(arr))
+    except:
+        print('')
+else:
+    print('')
+") || true
 
 # Fallback vocab if LLM fails
 if [ -z "$VOCAB_JSON" ] || ! echo "$VOCAB_JSON" | python3 -c "import json,sys; json.load(sys.stdin)" 2>/dev/null; then
   echo "[vocab script] LLM response invalid, using fallback words" >&2
-  VOCAB_JSON='[{"word":"bekämpfen","translation":"to fight, to combat","sentence":"Wir müssen die Korruption bekämpfen.","sentence_en":"We must fight corruption."},{"word":"der积雪","translation":"the积雪","sentence":"Der Schnee bedeckt die Straßen.","sentence_en":"Snow covers the streets."}]'
+  VOCAB_JSON='[{"word":"bekämpfen","translation":"to fight, to combat","sentence":"Wir müssen die Korruption bekämpfen.","sentence_en":"We must fight corruption."},{"word":"die Umwelt","translation":"the environment","sentence":"Wir müssen die Umwelt schützen.","sentence_en":"We must protect the environment."},{"word":"erklären","translation":"to explain","sentence":"Können Sie das bitte erklären?","sentence_en":"Can you please explain that?"},{"word":"die Meinung","translation":"the opinion","sentence":"Ich habe eine andere Meinung.","sentence_en":"I have a different opinion."},{"word":"sowohl als auch","translation":"both ... and ...","sentence":"Er spricht sowohl Englisch als auch Deutsch.","sentence_en":"He speaks both English and German."}]'
 fi
 
 # --- Check if today's section already exists ---
@@ -34,11 +54,10 @@ else
   echo "[vocab script] Adding section for $TODAY"
 
   # Extract words from JSON using python3
-  python3 << PYEOF
-import json, sys
+  python3 << 'PYEOF'
+import json, re, sys, os
 
-raw = """$VOCAB_JSON"""
-# Clean any markdown code blocks
+raw = os.environ.get('VOCAB_JSON', '')
 raw = raw.strip()
 if raw.startswith('```'):
     lines = raw.split('\n')
@@ -50,9 +69,10 @@ except:
     print("ERROR: failed to parse JSON", file=sys.stderr)
     sys.exit(1)
 
+today = os.environ.get('TODAY', '')
 html = f"""
-    <!-- {TODAY} -->
-    <div id="{TODAY}" class="date-section">
+    <!-- {today} -->
+    <div id="{today}" class="date-section">
 """
 
 for i, w in enumerate(words, 1):
@@ -72,38 +92,32 @@ with open("index.html", "r") as f:
 
 content = content.replace("    <footer>", html + "    <footer>")
 
-# Update dates array and currentIndex
-content = content.replace(
-    "const dates = [",
-    f"const dates = ["
-)
-# Add new date to array (before the closing ]
-import re
+# Add new date to array
 content = re.sub(
     r"(const dates = \[[\s\S]*?)\]\;",
-    lambda m: m.group(1) + f"'{TODAY}', ",
+    lambda m: m.group(1) + f"'{today}', ",
     content
 )
 
 # Remove duplicate dates if any
 content = re.sub(
-    r"(const dates = \[[\s\S]*?)'{TODAY}',\s*'{TODAY}'",
-    r"\1'{TODAY}'",
+    r"(const dates = \[[\s\S]*?)'{today}',\s*'{today}'",
+    r"\1'{today}'",
     content
 )
 
 with open("index.html", "w") as f:
     f.write(content)
 
-print(f"[vocab script] Added 5 words for $TODAY to index.html")
+print(f"[vocab script] Added {len(words)} words for {today} to index.html")
 PYEOF
 fi
 
 # --- Also update practice/index.html if word not already present ---
 python3 << 'PYEOF2'
-import json, re, sys
+import json, re, sys, os
 
-raw = """$VOCAB_JSON"""
+raw = os.environ.get('VOCAB_JSON', '')
 raw = raw.strip()
 if raw.startswith('```'):
     lines = raw.split('\n')
@@ -125,7 +139,6 @@ added = 0
 for w in words:
     if w['word'] not in existing_words:
         new_entry = f"""      {{ word: "{w['word']}", translation: "{w['translation']}", example: "{w['sentence']}" }},\n"""
-        # Insert before the last " ];" in vocabulary array
         content = content.rstrip()
         if content.endswith("];"):
             content = content[:-3] + new_entry + "    ];"
