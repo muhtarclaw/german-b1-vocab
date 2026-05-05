@@ -433,13 +433,13 @@
   </div>
 
   <script>
-    const dates = ['2026-04-22', '2026-04-25', '2026-04-26', '2026-04-27', '2026-04-28', '2026-04-29''2026-04-30', 
+    const dates = ['2026-04-22', '2026-04-25', '2026-04-26', '2026-04-27', '2026-04-28', '2026-04-29', '2026-04-30', '2026-05-05'];
     let currentIndex = dates.length - 1; // Start at latest date
 
     function updateView() {
       document.querySelectorAll('.date-section').forEach(el => el.classList.remove('active'));
       document.getElementById(dates[currentIndex]).classList.add('active');
-      document.getElementById('currentDate').textContent = '📅 ' + dates[currentIndex'2026-05-05', 
+      document.getElementById('currentDate').textContent = '📅 ' + dates[currentIndex];
       document.getElementById('prevBtn').classList.toggle('disabled', currentIndex === 0);
       document.getElementById('nextBtn').classList.toggle('disabled', currentIndex === dates.length - 1);
     }
