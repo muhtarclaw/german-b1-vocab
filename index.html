@@ -508,21 +508,25 @@
     function updateView() {
       document.querySelectorAll('.date-section').forEach(el => el.classList.remove('active'));
       document.getElementById(dates[currentIndex]).classList.add('active');
-      document.getElementById('currentDate').textContent = '📅 ' + dates[currentIndex'2026-05-07', 
-      document.getElementById('prevBtn').classList.toggle('disabled', currentIndex === 0);
-      document.getElementById('nextBtn').classList.toggle('disabled', currentIndex === dates.length - 1);
+      document.getElementById('currentDate').textContent = '📅 ' + dates[currentIndex];
+      // Previous button disabled when at latest date (highest index)
+      document.getElementById('prevBtn').classList.toggle('disabled', currentIndex === dates.length - 1);
+      // Next button disabled when at oldest date (index 0)
+      document.getElementById('nextBtn').classList.toggle('disabled', currentIndex === 0);
     }
 
     function prevDate() {
-      if (currentIndex > 0) {
-        currentIndex--;
+      // Move to newer date (higher index)
+      if (currentIndex < dates.length - 1) {
+        currentIndex++;
         updateView();
       }
     }
 
     function nextDate() {
-      if (currentIndex < dates.length - 1) {
-        currentIndex++;
+      // Move to older date (lower index)
+      if (currentIndex > 0) {
+        currentIndex--;
         updateView();
       }
     }
