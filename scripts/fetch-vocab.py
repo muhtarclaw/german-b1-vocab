@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 """Fetch German B1 vocab from Ollama cloud API and output JSON."""
-import urllib.request, json, re, sys
+import urllib.request, json, re, sys, subprocess
 
-MODEL = "minimax-m2.7:cloud"
-API_KEY = "a20f10d761304ae2bbbfb4bb047945db.Lsya1_8ufV7z9BxIhSqcOHhq"
+CLOUD_MODEL = "minimax-m2.7:cloud"
+CLOUD_API_KEY = "a20f10d761304ae2bbbfb4bb047945db.Lsya1_8ufV7z9BxIhSqcOHhq"
+LOCAL_MODEL = "gemma4:e2b"
 PROMPT = """Generate exactly 5 German B1-level vocabulary words appropriate for the TELC B1 exam.
 For each word provide:
 - the German word/phrase
@@ -14,50 +15,80 @@ For each word provide:
 Format each entry as a JSON object with keys: word, translation, sentence, sentence_en
 Return ONLY a valid JSON array with exactly 5 objects, nothing else. No markdown code blocks."""
 
-req = urllib.request.Request(
-    "https://ollama.com/v1/chat/completions",
-    data=json.dumps({
-        "model": MODEL,
-        "messages": [{"role": "user", "content": PROMPT}],
-        "stream": False
-    }).encode(),
-    headers={
-        "Content-Type": "application/json",
-        "Authorization": f"Bearer {API_KEY}"
-    }
-)
+def call_cloud_api():
+    req = urllib.request.Request(
+        "https://ollama.com/v1/chat/completions",
+        data=json.dumps({
+            "model": CLOUD_MODEL,
+            "messages": [{"role": "user", "content": PROMPT}],
+            "stream": False
+        }).encode(),
+        headers={
+            "Content-Type": "application/json",
+            "Authorization": f"Bearer {CLOUD_API_KEY}"
+        }
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=120) as resp:
+            data = json.load(resp)
+            return data["choices"][0]["message"]["content"].strip()
+    except Exception as e:
+        print(f"Cloud API error: {e}", file=sys.stderr)
+        return None
 
-try:
-    with urllib.request.urlopen(req, timeout=120) as resp:
-        data = json.load(resp)
-        text = data["choices"][0]["message"]["content"].strip()
-except Exception as e:
-    print(f"API error: {e}", file=sys.stderr)
+def call_local_ollama():
+    try:
+        result = subprocess.run(
+            ["ollama", "chat", LOCAL_MODEL, "-p", PROMPT],
+            capture_output=True, text=True, timeout=60
+        )
+        return result.stdout.strip()
+    except FileNotFoundError:
+        print("Ollama CLI not found", file=sys.stderr)
+        return None
+    except Exception as e:
+        print(f"Local Ollama error: {e}", file=sys.stderr)
+        return None
+
+def extract_json(text):
+    # Strip markdown code fences
+    text = re.sub(r"^```(?:json)?\s*", "", text)
+    text = re.sub(r"\s*```\s*$", "", text)
+    
+    # Find balanced JSON array via bracket counting
+    depth = 0
+    start = -1
+    for i, c in enumerate(text):
+        if c == "[":
+            if start == -1:
+                start = i
+            depth += 1
+        elif c == "]":
+            depth -= 1
+            if depth == 0 and start != -1:
+                candidate = text[start:i+1]
+                try:
+                    return json.loads(candidate)
+                except Exception as e:
+                    print(f"JSON parse error: {e}", file=sys.stderr)
+                    return None
+    return None
+
+# Try local model first, then cloud
+vocab_text = None
+if not vocab_text:
+    vocab_text = call_local_ollama()
+
+if not vocab_text:
+    vocab_text = call_cloud_api()
+
+if not vocab_text:
+    print("All API calls failed", file=sys.stderr)
     sys.exit(1)
 
-# Strip markdown code fences
-text = re.sub(r"^```(?:json)?\s*", "", text)
-text = re.sub(r"\s*```\s*$", "", text)
-
-# Find balanced JSON array via bracket counting
-depth = 0
-start = -1
-for i, c in enumerate(text):
-    if c == "[":
-        if start == -1:
-            start = i
-        depth += 1
-    elif c == "]":
-        depth -= 1
-        if depth == 0 and start != -1:
-            candidate = text[start:i+1]
-            try:
-                arr = json.loads(candidate)
-                print(json.dumps(arr, ensure_ascii=False))
-            except Exception as e:
-                print(f"JSON parse error: {e}", file=sys.stderr)
-                sys.exit(1)
-            break
-else:
-    print("No JSON array found in response", file=sys.stderr)
+arr = extract_json(vocab_text)
+if not arr:
+    print("No valid JSON array found", file=sys.stderr)
     sys.exit(1)
+
+print(json.dumps(arr, ensure_ascii=False))

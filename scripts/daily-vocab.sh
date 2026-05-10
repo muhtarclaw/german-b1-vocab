@@ -4,6 +4,9 @@
 REPO="/home/muhtar/german-b1-vocab"
 TODAY=$(date +%Y-%m-%d)
 
+# Use local Git token from environment if available, otherwise use stored value
+GIT_TOKEN="${GIT_TOKEN:-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}"
+
 cd "$REPO" || exit 1
 
 # --- Check if model is cached ---
