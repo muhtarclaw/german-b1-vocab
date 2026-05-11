@@ -51,13 +51,30 @@ except:
     print("ERROR: failed to parse JSON", file=sys.stderr)
     sys.exit(1)
 
+# Get existing words to avoid duplicates
+with open("index.html", "r") as f:
+    existing_content = f.read()
+existing_words = set(re.findall(r'<div class="german">\s*<span class="number">.*?</span>\s*([^<]+)', existing_content))
+
+# Filter out words that already exist
+today_words = []
+for w in words:
+    if w['word'] in existing_words:
+        print(f"[vocab script] Skipping duplicate: {w['word']}", file=sys.stderr)
+    else:
+        today_words.append(w)
+
+if len(today_words) == 0:
+    print("[vocab script] All words are duplicates, aborting update", file=sys.stderr)
+    sys.exit(0)
+
 today = os.environ.get('TODAY', '')
 html = f"""
     <!-- {today} -->
     <div id="{today}" class="date-section">
 """
 
-for i, w in enumerate(words, 1):
+for i, w in enumerate(today_words, 1):
     html += f"""      <div class="word-card">
         <div class="german"><span class="number">{i}.</span> {w['word']}</div>
         <div class="english">= {w['translation']}</div>
@@ -68,14 +85,12 @@ for i, w in enumerate(words, 1):
 
 html += "    </div>\n"
 
-with open("index.html", "r") as f:
-    content = f.read()
-
+content = existing_content
 content = content.replace("    <footer>", html + "    <footer>")
 
 # Add new date to array
 content = re.sub(
-    r"(const dates = \[[\s\S]*?)\]\;",
+    r"(const dates = \[[\s\S]*?)\];",
     lambda m: m.group(1) + f"'{today}', ",
     content
 )
@@ -90,7 +105,7 @@ content = re.sub(
 with open("index.html", "w") as f:
     f.write(content)
 
-print(f"[vocab script] Added {len(words)} words for {today} to index.html")
+print(f"[vocab script] Added {len(today_words)} new words for {today} to index.html")
 PYEOF
 fi
 
