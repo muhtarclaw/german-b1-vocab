@@ -51,24 +51,32 @@ except:
     print("ERROR: failed to parse JSON", file=sys.stderr)
     sys.exit(1)
 
-# Get existing words to avoid duplicates
+today = os.environ.get('TODAY', '')
+
+# Get existing words to avoid duplicates (only for today's date section)
 with open("index.html", "r") as f:
     existing_content = f.read()
-existing_words = set(re.findall(r'<div class="german">\s*<span class="number">.*?</span>\s*([^<]+)', existing_content))
 
-# Filter out words that already exist
+# Check if today's section already has all words by looking for the date section
+# Only check words within today's section if it exists partially
+existing_words_today = set()
+today_section_match = re.search(r'<div id="' + re.escape(today) + r'"[^>]*>(.*?)</div>\s*</div>', existing_content, re.DOTALL)
+if today_section_match:
+    section_content = today_section_match.group(1)
+    existing_words_today = set(re.findall(r'<div class="german">\s*<span class="number">.*?</span>\s*([^<]+)', section_content))
+
+# Filter out words that already exist in today's section
 today_words = []
 for w in words:
-    if w['word'] in existing_words:
-        print(f"[vocab script] Skipping duplicate: {w['word']}", file=sys.stderr)
+    if w['word'] in existing_words_today:
+        print(f"[vocab script] Skipping duplicate (already in today's section): {w['word']}", file=sys.stderr)
     else:
         today_words.append(w)
 
 if len(today_words) == 0:
-    print("[vocab script] All words are duplicates, aborting update", file=sys.stderr)
+    print("[vocab script] All words already in today's section, aborting update", file=sys.stderr)
     sys.exit(0)
 
-today = os.environ.get('TODAY', '')
 html = f"""
     <!-- {today} -->
     <div id="{today}" class="date-section">
