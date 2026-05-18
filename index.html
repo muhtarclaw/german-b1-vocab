@@ -768,13 +768,13 @@
   </div>
 
   <script>
-    const dates = ['2026-04-22', '2026-04-25', '2026-04-26', '2026-04-27', '2026-04-28', '2026-04-29', '2026-04-30', '2026-05-05', '2026-05-06', '2026-05-07', '2026-05-08', '2026-05-09', '2026-05-10', '2026-05-11''2026-05-12', 
+    const dates = ['2026-04-22', '2026-04-25', '2026-04-26', '2026-04-27', '2026-04-28', '2026-04-29', '2026-04-30', '2026-05-05', '2026-05-06', '2026-05-07', '2026-05-08', '2026-05-09', '2026-05-10', '2026-05-11', '2026-05-12', '2026-05-13', '2026-05-17', '2026-05-18'];
     let currentIndex = dates.length - 1; // Start at latest date
 
     function updateView() {
       document.querySelectorAll('.date-section').forEach(el => el.classList.remove('active'));
       document.getElementById(dates[currentIndex]).classList.add('active');
-      document.getElementById('currentDate').textContent = '📅 ' + dates[currentIndex'2026-05-13', 
+      document.getElementById('currentDate').textContent = '📅 ' + dates[currentIndex];
       // Previous button disabled when at latest date (highest index)
       document.getElementById('prevBtn').classList.toggle('disabled', currentIndex === dates.length - 1);
       // Next button disabled when at oldest date (index 0)
